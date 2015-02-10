@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="sorties_array">
+        <item>1 Porte de la Rigourdière</item>
+        <item>2 Porte de la Valette</item>
+        <item>3a Porte de Beaulieu</item>
+        <item>3b Porte de Beaulieu</item>
+        <item>4 Porte des Loges</item>
+        <item>5 Porte d\'Angers / Porte du Blosne</item>
+        <item>6a Porte de Nantes / Porte d\'Alma</item>
+        <item>6b Porte d\'Alma</item>
+        <item>7 Porte de Bréquigny</item>
+        <item>7a Porte de Bréquigny</item>
+        <item>7b Porte de Bréquigny</item>
+        <item>8 Porte de Saint Nazaire</item>
+        <item>9 Porte de Cleunay</item>
+        <item>10 Porte de Lorient</item>
+        <item>11 Porte de Brest</item>
+        <item>12 Porte de Villejean</item>
+        <item>13a Porte de Beauregard</item>
+        <item>13b Porte de Saint-Malo</item>
+        <item>14 Porte de Maurepas</item>
+        <item>15 Porte des Longs Champs</item>
+        <item>16 Porte de Normandie</item>
+        <item>17 Porte de Tizé</item>
+    </string-array>
+</resources>

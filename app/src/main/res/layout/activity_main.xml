@@ -1,0 +1,66 @@
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/accueil"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical" >
+
+
+    <TextView
+        android:id="@+id/label_question"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:paddingTop="12dp"
+        android:text="@string/label_ou_aller"
+        android:textSize="24dp" />
+
+
+    <Spinner
+        android:id="@+id/ou_aller"
+        android:paddingTop="12dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/btn_valider"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="validerDestination"
+        android:text="Valider"
+        android:layout_gravity="center_horizontal" />
+
+    <!-- <Space
+        android:layout_width="match_parent"
+        android:layout_height="166dp"
+        android:layout_gravity="center_horizontal" />
+
+    <Chronometer
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/chronometer"
+        android:layout_gravity="center_horizontal" /> -->
+
+    <TextView
+        android:id="@+id/resultat"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:paddingTop="48dp"
+        android:paddingBottom="12dp"
+        android:text="@string/activite_serveur"
+        android:textSize="12sp"
+        android:enabled="false" />
+
+    <!-- <Button
+        android:id="@+id/valider_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/margin_medium"
+        android:onClick="save"
+        android:text="@string/valider_location"
+        android:textAlignment="center" />-->
+
+</LinearLayout>

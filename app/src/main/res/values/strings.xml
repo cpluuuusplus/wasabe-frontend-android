@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+
+<resources>
+
+    <string name="bienvenue_principal">Bienvenue à Wasabe !</string>
+    <string name="label_ou_aller">Où voulez-vous aller ?</string>
+    <string name="help_saisir_location">Saisir une localisation</string>
+    <string name="valider_location">Valider</string>
+    <string name="activite_serveur">Pas encore d\'activité serveur</string>
+    <string name="serveur_distant_test">aaa</string>
+
+</resources>
