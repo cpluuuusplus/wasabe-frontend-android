@@ -53,6 +53,8 @@ public class CallAPI extends AsyncTask<String, String, String> {
 
     @Override
     protected void onPreExecute() {
+        TextView tv = (TextView) act.findViewById(R.id.resultat);
+        tv.setText("Envoi en cours");
 
     }
 
@@ -85,27 +87,21 @@ public class CallAPI extends AsyncTask<String, String, String> {
         // Envoi de la requête
         HttpResponse httpResponse = sendDeviceInfo("http://10.0.2.2:8080/Wasabe-Server/deviceinfo", json, act);
 
-
-
         //vérif
-        // System.out.println("Contenu de la HTTPResponse : "+httpResponse.toString());
+        System.out.println("Contenu de la HTTPResponse : "+httpResponse.toString());
 
         // On tente d'ouvrir le resultat -> InputStream
         InputStream resultIS = null;
         try {
             resultIS = httpResponse.getEntity().getContent();
             //vérif
-            System.out.println("Contenu du InputStream : "+resultIS.toString());
+            System.out.println("Contenu de la InputStream recue : "+resultIS.toString());
 
         }catch(IOException e){
             System.err.println("IOException "+ e.getMessage());
-
-
         }catch(NullPointerException e){
             System.err.println("Il n'y a rien dans le InputStream ;"+ e.getMessage());
         }
-
-
 
         // On tente une conversion en String
         String resultS = null;
@@ -113,14 +109,10 @@ public class CallAPI extends AsyncTask<String, String, String> {
             resultS = convertInputStreamToString(resultIS);
         }catch(IOException e){
             System.err.println("Impossible de convertir le InputStream en String ;"+ e.getMessage());
-
         }
-
         // vérif
-        System.out.println("Contenu du String : "+resultS.toString());
-
+        System.out.println("Contenu du String recu : "+resultS.toString());
         return resultS;
-
 
     }
 
@@ -135,7 +127,7 @@ public class CallAPI extends AsyncTask<String, String, String> {
 
         // C'est un peu bancal mais ça marche
         if(di != null && di.getId() != 0.0){
-            tv.setText("Requête reçue");
+            tv.setText("Réponse reçue");
             // Update the MainActivity's DeviceInfo
             MainActivity.di.setId(di.getId());
         }else{
@@ -230,23 +222,26 @@ public class CallAPI extends AsyncTask<String, String, String> {
     private static DeviceInfo decodeDeviceInfo(String resultS){
         // On tente de coercer le résultat en JSON
         JSONObject resultJ = null;
+        JSONObject deviceInfoJ = null;
         // Si c'est bon on crée le DeviceInfo contenant l'identifiant à jour
         DeviceInfo di = null;
 
         try {
+            deviceInfoJ =
             resultJ = new JSONObject(resultS);
+            deviceInfoJ = resultJ.getJSONObject("deviceInfo");
 
             // Extraction de l'information
-            double temps = resultJ.getDouble("temps");
-            double longitude = resultJ.getDouble("longitude");
-            double latitude = resultJ.getDouble("latitude");
-            double precision = resultJ.getDouble("precision");
-            double id = resultJ.getDouble("id");
-            String destination = resultJ.getString("destination");
+            double temps = deviceInfoJ.getDouble("temps");
+            double longitude = deviceInfoJ.getDouble("longitude");
+            double latitude = deviceInfoJ.getDouble("latitude");
+            double precision = deviceInfoJ.getDouble("precision");
+            String id = deviceInfoJ.getString("id");
+            String destination = deviceInfoJ.getString("destination");
 
             di = new DeviceInfo(temps, longitude, latitude, precision, id, destination);
         }catch(JSONException e){
-            System.err.println("Le résultat du InputStream n'a pas pu être coercé en JSON ;"+ e.getMessage());
+            System.err.println("Le résultat du InputStream n'a pas pu être parsé en JSON ;"+ e.getMessage());
 
         }
 

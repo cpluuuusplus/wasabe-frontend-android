@@ -102,6 +102,8 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
 
 
+
+
         }else {
             // Tell the user that internet is required
             TextView progress = (TextView) findViewById(R.id.resultat);
