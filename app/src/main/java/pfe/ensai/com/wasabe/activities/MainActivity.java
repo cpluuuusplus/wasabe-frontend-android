@@ -18,6 +18,7 @@ package pfe.ensai.com.wasabe.activities;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -28,9 +29,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.TextView;
+import android.widget.Toast;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -41,33 +41,25 @@ import pfe.ensai.com.wasabe.rest.CallAPI;
 import pfe.ensai.com.wasabe.util.DeviceInfo;
 
 /**
- * Sample application demonstrating how to test whether a device is connected,
- * and if so, whether the connection happens to be wifi or mobile (it could be
- * something else).
- * <p/>
- * This sample uses the logging framework to display log output in the log
- * fragment (LogFragment).
+ * Cette activite permet de selectionner une porte du peripherique
+ * de Rennes; d'envoyer un relevé geolocalisé et
  */
 public class MainActivity extends Activity implements AdapterView.OnItemSelectedListener {
 
     public static final String TAG = "MainActivity";
-    public static DeviceInfo di;
+    private static DeviceInfo di;
+
     // Location related
     public LocationManager locationManager;
     // In order to execute the recurring requests
     ScheduledThreadPoolExecutor executor_;
-    private Double latitude;
-    private Double longitude;
-    private Double precision;
-    private String destination;
     // Device identifier, filled in by getDeviceIdentifier()
-    private Double deviceID = -1.0;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView( pfe.ensai.com.wasabe.R.layout.activity_main);
+        setContentView(pfe.ensai.com.wasabe.R.layout.activity_main);
 
 
         // Population de la Spinner des echangeurs
@@ -82,41 +74,16 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
         di = new DeviceInfo();
 
-        executor_ = new ScheduledThreadPoolExecutor(5);
+        executor_ = new ScheduledThreadPoolExecutor(1);
         executor_.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                Log.i(TAG, "Running a deviceInfo request");
-                // send DeviceInfo via REST
+
+                Log.i("MainActivity:oncreate", "Envoi de DI programmé");
                 sendDeviceInfo();
 
             }
-        }, 0, 5, TimeUnit.HOURS);
-
-/*
-        if(connectedToInternet()) {
-
-
-
-
-
-
-
-
-
-        }else {
-            // Tell the user that internet is required
-            TextView progress = (TextView) findViewById(R.id.resultat);
-            progress.setText("Erreur : Aucune connexion ! Prière de vous connecter à internet afin d'utiliser cette application.");
-
-        }
-
-*/
-
-
-        // Get DeviceInfo's ID and attribute it to the device
-
-
+        }, 0, 10, TimeUnit.SECONDS);
     }
 
 
@@ -140,29 +107,36 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     }
 
     /**
-     * Required 1/2 for spinner to update values
+     * Required 2/2 for spinner to update values
      */
     @Override
     public void onNothingSelected(AdapterView<?> arg0) {
         // Rien ne se paaaasse
-
     }
 
 
+    /**
+     * @param v
+     */
     public void validerDestination(View v) {
         Spinner spinner = (Spinner) findViewById(R.id.ou_aller);
         Log.d(TAG, " Position sélectionnée : " + spinner.getSelectedItem().toString());
 
-        // initialiser Destination
-        di.setDestination(spinner.getSelectedItem().toString());
+        // recuperer preferences
 
+        SharedPreferences preferences = this.getSharedPreferences("DeviceInfoIdentifiant", Context.MODE_PRIVATE);
+        String record = preferences.getString("DeviceInfoIdentifiant", "");
+        Toast.makeText(this, "Identifiant provenant des prefs: " + record, Toast.LENGTH_LONG).show();
+        // Sauvegarde sur le device des prefe
+        di.setId(record);
+        // inliser Destination
+        di.setDestination(spinner.getSelectedItem().toString());
 
         // Appel Async
         // send DeviceInfo via REST
         sendDeviceInfo();
-
-
     }
+
 
 
     /**
@@ -181,43 +155,19 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
      * Envoi de DeviceInfo (contient l'appel asynchrone)
      */
     private void sendDeviceInfo() {
-        locateDevice();
-        Double unixtimestamp = (double) System.currentTimeMillis() / 1000;
-        di.setTemps(unixtimestamp);
-
-
-        JSONObject jso = createJSONfromDeviceInfo(di);
-        String stringedJsonDeviceInfo = "{\"deviceInfo\" :"+ jso.toString() + "}";
-
-        TextView progress = (TextView) findViewById(R.id.resultat);
-        new CallAPI(this).execute(stringedJsonDeviceInfo);
-
-    }
-
-
-    /**
-     * Creates a JSON object from a DeviceInfo
-     *
-     * @param di deviceinfo
-     * @return JSONObject
-     */
-    private JSONObject createJSONfromDeviceInfo(DeviceInfo di) {
-        JSONObject res = new JSONObject();
-
-        try {
-            res.put("temps", di.getTemps());
-            res.put("longitude", di.getLongitude());
-            res.put("latitude", di.getLatitude());
-            res.put("precision", di.getPrecision());
-            res.put("id", di.getId());
-            res.put("destination", di.getDestination());
-
-        } catch (JSONException je) {
-            System.out.println(TAG + " Exception JSON while creating JSONized DeviceInfo");
-            je.printStackTrace();
+        // Si le device a pu être localisé
+        if (locateDeviceInSpaceTime()) {
+            // Creation du JSON
+            JSONObject jso = di.createJSONfromDeviceInfo();
+            // Passage du JSON en String
+            String stringedJsonDeviceInfo = "{\"deviceInfo\" :" + jso.toString() + "}";
+            // Exécution de l'appel asynchrone
+            new CallAPI(this).execute(stringedJsonDeviceInfo);
+        } else {
+            Log.e(TAG, "Aucune requete envoyée car on n'a pas la localisation0");
         }
-        return res;
     }
+
 
     /**
      * Check whether the device is connected, and if so, whether the connection
@@ -241,31 +191,49 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
 
     /**
      * Localiser le device
+     *
+     * @return si il a bien été localisé
      */
-    private void locateDevice() {
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+    private boolean locateDeviceInSpaceTime() {
+        // set time
+        di.setTemps((double) System.currentTimeMillis() / 1000);
 
+        // set location
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Location lastLocation = locationManager
                 .getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (lastLocation != null) {
-            updateLoc(lastLocation);
+            // Location provided by GPS
+            di.setLatitude(lastLocation.getLatitude());
+            di.setLongitude(lastLocation.getLongitude());
+            di.setPrecision(Double.parseDouble(lastLocation.getAccuracy() + ""));
+            return true;
         } else {
             lastLocation = locationManager
                     .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             if (lastLocation != null) {
-                updateLoc(lastLocation);
+                // location provided by network provider (cell tower triangulation)
+                di.setLatitude(lastLocation.getLatitude());
+                di.setLongitude(lastLocation.getLongitude());
+                di.setPrecision(Double.parseDouble(lastLocation.getAccuracy() + ""));
+                return true;
             } else {
-                di.setLatitude(-1000.0);
-                di.setLongitude(-1000.0);
-                di.setPrecision(-1000.0);
+                Log.e(TAG, "No location available for device; using test data input inside MainActivity");
+                di.setLongitude(-1.627519126161682);
+                di.setLatitude(48.091573052747819);
+                di.setPrecision(20.0);
+                return true;
             }
         }
     }
 
-    private void updateLoc(Location location) {
-        di.setLatitude(location.getLatitude());
-        di.setLongitude(location.getLongitude());
-        di.setPrecision(Double.parseDouble(location.getAccuracy() + ""));
+    /**
+     * Sets the DeviceInfo's id, convenience method for CallAPI
+     *
+     * @param newId
+     */
+    public void setDeviceInfoId(String newId) {
+        di.setId(newId);
     }
 
 
