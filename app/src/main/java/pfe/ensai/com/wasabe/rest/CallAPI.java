@@ -3,8 +3,10 @@ package pfe.ensai.com.wasabe.rest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -208,17 +210,16 @@ public class CallAPI extends AsyncTask<String, String, String> {
      */
     public void populateItineraireTableFromString(String s) {
 
-
         try {
 
             JSONObject itineraireJ = new JSONObject(s);
 
-            Double tempsTotal = itineraireJ.getDouble("tempsTotal");
+            Double tempsTotalMinutes = itineraireJ.getDouble("tempsTotal");
             TextView tv = (TextView) act.findViewById(R.id.resultat);
-            tv.setText("Arrivée prévue dans "+ tempsTotal +" minutes.");
+            tv.setText("Arrivée prévue dans "+ String.format("%.0f", tempsTotalMinutes) +" minutes.");
 
 
-            TableLayout tableContainer = (TableLayout) act.findViewById(R.id.table_itineraire);
+            TableLayout tableContainer = (TableLayout) act.findViewById(R.id.elv_itineraire);
             tableContainer.removeAllViews();
             TableRow row = new TableRow(act);
             LinearLayout.LayoutParams lp_wc_wc = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -226,37 +227,40 @@ public class CallAPI extends AsyncTask<String, String, String> {
 
             // Nom Troncon
             final TextView tvLabelNomTroncon = new TextView(act.getApplicationContext());
-            LinearLayout.LayoutParams lp_ltvtroncon = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (LinearLayout.LayoutParams.WRAP_CONTENT));
             tvLabelNomTroncon.setLayoutParams(lp_wc_wc);
-            tvLabelNomTroncon.setText("Nom du Troncon");
+            tvLabelNomTroncon.setText("Numéro de \n sortie");
+            tvLabelNomTroncon.setTextColor(0xFF000000);
             row.addView(tvLabelNomTroncon, new TableRow.LayoutParams(1));
 
 
             // vitesse moyenne
             final TextView tvLabelVitesseMoyenne = new TextView(act.getApplicationContext());
-            LinearLayout.LayoutParams lp_tvvitessemoyenne = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, (LinearLayout.LayoutParams.WRAP_CONTENT));
             tvLabelVitesseMoyenne.setLayoutParams(lp_wc_wc);
-            tvLabelVitesseMoyenne.setText("Vitesse Moyenne");
+            tvLabelVitesseMoyenne.setText("Vitesse \n Moyenne");
+            tvLabelVitesseMoyenne.setTextColor(0xFF000000);
             row.addView(tvLabelVitesseMoyenne, new TableRow.LayoutParams(2));
 
 
             // Fluidité
             final TextView tvLabelfluidite = new TextView(act.getApplicationContext());
             tvLabelfluidite.setLayoutParams(lp_wc_wc);
-            tvLabelfluidite.setText("Fluidité");
+            tvLabelfluidite.setText("Trafic");
+            tvLabelfluidite.setTextColor(0xFF000000);
+
             row.addView(tvLabelfluidite, new TableRow.LayoutParams(3));
 
             // tempsFluidite
             final TextView tvLabeltempsFluidite = new TextView(act.getApplicationContext());
             tvLabeltempsFluidite.setLayoutParams(lp_wc_wc);
-            tvLabeltempsFluidite.setText("durée");
+            tvLabeltempsFluidite.setText(" ");
+            tvLabeltempsFluidite.setTextColor(0xFF000000);
             row.addView(tvLabeltempsFluidite, new TableRow.LayoutParams(3));
 
             tableContainer.addView(row, new TableLayout.LayoutParams());
 
 
             // On extrait l'array de troncons
-            JSONArray tronconsJ = (JSONArray) itineraireJ.getJSONArray("troncons");
+            JSONArray tronconsJ =  itineraireJ.getJSONArray("troncons");
 
             for (int i = 0; i < tronconsJ.length(); i++) {
 
@@ -267,33 +271,58 @@ public class CallAPI extends AsyncTask<String, String, String> {
 
                 // Nom orienté du troncon
                 String nomTroncon = tronconJ.getString("nomAffiche");
+                // vitesse moyenne
+                Double vitesseMoyenne = tronconJ.getDouble("vitesseMoyenne");
+
+                String vitesseMoyenneFormattee = String.format("%.0f", vitesseMoyenne);
+
+
+
+                Resources resource = act.getResources();
+
+                if(vitesseMoyenne > 80){
+                    rowData.setBackgroundColor(resource.getColor(R.color.lightblue));
+                }else if (vitesseMoyenne > 60){
+                    rowData.setBackgroundColor(resource.getColor(R.color.yellowgreen));
+                }else if (vitesseMoyenne > 40){
+                    rowData.setBackgroundColor(resource.getColor(R.color.grey));
+                }else if (vitesseMoyenne > 20){
+                    rowData.setBackgroundColor(resource.getColor(R.color.orange));
+                }else if (vitesseMoyenne > 0) {
+                    rowData.setBackgroundColor(resource.getColor(R.color.red));
+                }
+                rowData.setPadding(1,1,1,1);
+
+
+                JSONObject etatJ = (JSONObject) tronconJ.getJSONObject("etat");
+                // Fluidité
+                String fluidite = etatJ.getString("indicatif");
+                // tempsFluidite
+                Double tempsFluidite = etatJ.getDouble("tempsEtatConstant");
+                String tempsFluiditeFormatte = String.format("%.0f", tempsFluidite);
+
                 final TextView tvNomTroncon = new TextView(act.getApplicationContext());
                 tvNomTroncon.setLayoutParams(lp_wc_wc);
                 tvNomTroncon.setText(nomTroncon);
+                tvNomTroncon.setTextColor(0xFF000000);
                 rowData.addView(tvNomTroncon, new TableRow.LayoutParams(1));
 
-
-                // vitesse moyenne
-                Double vitesseMoyenne = tronconJ.getDouble("vitesseMoyenne");
                 final TextView tvVitesseMoyenne = new TextView(act.getApplicationContext());
                 tvVitesseMoyenne.setLayoutParams(lp_wc_wc);
-                tvVitesseMoyenne.setText(" " + vitesseMoyenne + " km/h");
+                tvVitesseMoyenne.setText(" " + vitesseMoyenneFormattee + " km/h");
+                tvVitesseMoyenne.setTextColor(0xFF000000);
                 rowData.addView(tvVitesseMoyenne, new TableRow.LayoutParams(2));
 
-                JSONObject etatJ = (JSONObject) tronconJ.getJSONObject("etat");
-
-                // Fluidité
-                String fluidite = etatJ.getString("indicatif");
                 final TextView tvfluidite = new TextView(act.getApplicationContext());
                 tvfluidite.setLayoutParams(lp_wc_wc);
                 tvfluidite.setText(fluidite);
+                tvfluidite.setTextColor(0xFF000000);
                 rowData.addView(tvfluidite, new TableRow.LayoutParams(3));
 
-                // tempsFluidite
-                Double tempsFluidite = etatJ.getDouble("tempsEtatConstant");
                 final TextView tvtempsFluidite = new TextView(act.getApplicationContext());
                 tvtempsFluidite.setLayoutParams(lp_wc_wc);
-                tvtempsFluidite.setText(" depuis " + tempsFluidite + " minutes");
+                tvtempsFluidite.setText(" depuis " + tempsFluiditeFormatte + " minutes");
+                tvtempsFluidite.setTextColor(0xFF000000);
                 rowData.addView(tvtempsFluidite, new TableRow.LayoutParams(3));
 
 
@@ -331,7 +360,7 @@ public class CallAPI extends AsyncTask<String, String, String> {
             SharedPreferences sp = act.getSharedPreferences("DeviceInfoIdentifiant", Context.MODE_PRIVATE);
             SharedPreferences.Editor edit = sp.edit();
             edit.putString("DeviceInfoIdentifiant", identifiant);
-            edit.commit();
+            edit.apply();
 
         } catch (JSONException e) {
             act.runOnUiThread(new Runnable() {
@@ -355,5 +384,4 @@ public class CallAPI extends AsyncTask<String, String, String> {
     }
 
 
-} // end CallAPI
-
+}

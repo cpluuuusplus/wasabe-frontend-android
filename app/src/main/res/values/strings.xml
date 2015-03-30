@@ -9,5 +9,6 @@
     <string name="valider_location">Valider</string>
     <string name="activite_serveur">Pas encore d\'activité serveur</string>
     <string name="serveur_distant_test">aaa</string>
+    <string name="valider_test">TestReception</string>
 
 </resources>

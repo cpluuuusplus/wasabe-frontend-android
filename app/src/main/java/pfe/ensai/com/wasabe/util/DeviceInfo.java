@@ -160,6 +160,7 @@ public class DeviceInfo {
             System.out.println(" Exception JSON while creating JSONized DeviceInfo");
             je.printStackTrace();
         }
+
         return res;
     }
 

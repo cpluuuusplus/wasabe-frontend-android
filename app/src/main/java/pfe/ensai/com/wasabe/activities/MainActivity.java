@@ -49,6 +49,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     public static final String TAG = "MainActivity";
     private static DeviceInfo di;
 
+
     // Location related
     public LocationManager locationManager;
     // In order to execute the recurring requests
@@ -71,6 +72,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
+
 
         di = new DeviceInfo();
 
@@ -103,7 +105,6 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     @Override
     public void onItemSelected(AdapterView<?> arg0, View arg1,
                                int arg2, long arg3) {
-        // Rien ne se paaaasse
     }
 
     /**
@@ -111,7 +112,6 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
      */
     @Override
     public void onNothingSelected(AdapterView<?> arg0) {
-        // Rien ne se paaaasse
     }
 
 
@@ -138,6 +138,12 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     }
 
 
+    public void validerTest(View v) {
+        String s = "{\"tempsTotal\":1.826527654030028,\"troncons\":[\n" +
+                "{\"nomAffiche\":\"14\",\"vitesseMoyenne\":81.208385223939242,\"tempsParcours\":0.12730813645125325,\"etat\":{\"tempsEtatConstant\":8,\"indicatif\":\"fluide\"}}, {\"nomAffiche\":\"13\",\"vitesseMoyenne\":85,\"tempsParcours\":0.3078532625598217,\"etat\":{\"tempsEtatConstant\":7,\"indicatif\":\"fluide\"}}, {\"nomAffiche\":\"12\",\"vitesseMoyenne\":75.120752007668598,\"tempsParcours\":0.16150507600761196,\"etat\":{\"tempsEtatConstant\":6,\"indicatif\":\"fluide\"}}, {\"nomAffiche\":\"11\",\"vitesseMoyenne\":45.241038466751332,\"tempsParcours\":0.08678705523860714,\"etat\":{\"tempsEtatConstant\":7,\"indicatif\":\"ralentie\"}}, {\"nomAffiche\":\"10\",\"vitesseMoyenne\":14.489596210090651,\"tempsParcours\":0.19986795358353263,\"etat\":{\"tempsEtatConstant\":7,\"indicatif\":\"ralentie\"}}, {\"nomAffiche\":\"9\",\"vitesseMoyenne\":6.004624677937102,\"tempsParcours\":0.2602518199323539,\"etat\":{\"tempsEtatConstant\":7,\"indicatif\":\"ralentie\"}}, {\"nomAffiche\":\"8\",\"vitesseMoyenne\":84.3054593822089515,\"tempsParcours\":0.15513759888462447,\"etat\":{\"tempsEtatConstant\":7,\"indicatif\":\"fluide\"}}, {\"nomAffiche\":\"7\",\"vitesseMoyenne\":78.313425059452653,\"tempsParcours\":0.21954427123607673,\"etat\":{\"tempsEtatConstant\":6,\"indicatif\":\"fluide\"}}, {\"nomAffiche\":\"6\",\"vitesseMoyenne\":85.376845964222746,\"tempsParcours\":0.17775497877851865,\"etat\":{\"tempsEtatConstant\":7,\"indicatif\":\"ralentie\"}}, {\"nomAffiche\":\"5\",\"vitesseMoyenne\":45.438582200665044,\"tempsParcours\":0.1305175013576274,\"etat\":{\"tempsEtatConstant\":7,\"indicatif\":\"ralentie\"}}]}\n";
+        (new CallAPI(this)).populateItineraireTableFromString(s);
+    }
+
 
     /**
      *
@@ -162,7 +168,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
             // Passage du JSON en String
             String stringedJsonDeviceInfo = "{\"deviceInfo\" :" + jso.toString() + "}";
             // Exécution de l'appel asynchrone
-            new CallAPI(this).execute(stringedJsonDeviceInfo);
+            (new CallAPI(this)).execute(stringedJsonDeviceInfo);
         } else {
             Log.e(TAG, "Aucune requete envoyée car on n'a pas la localisation0");
         }
@@ -172,21 +178,23 @@ public class MainActivity extends Activity implements AdapterView.OnItemSelected
     /**
      * Check whether the device is connected, and if so, whether the connection
      * is wifi or mobile (it could be something else).
+
+
+     private boolean connectedToInternet() {
+     // BEGIN_INCLUDE(connect)
+     ConnectivityManager connMgr =
+     (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+     NetworkInfo activeInfo = connMgr.getActiveNetworkInfo();
+     if (activeInfo != null && activeInfo.isConnected()) {
+     Log.i(TAG, "Connecté à Internet");
+     return true;
+     } else {
+     Log.i(TAG, "Pas connecté à internet");
+     return false;
+     }
+     // END_INCLUDE(connect)
+     }
      */
-    private boolean connectedToInternet() {
-        // BEGIN_INCLUDE(connect)
-        ConnectivityManager connMgr =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeInfo = connMgr.getActiveNetworkInfo();
-        if (activeInfo != null && activeInfo.isConnected()) {
-            Log.i(TAG, "Connecté à Internet");
-            return true;
-        } else {
-            Log.i(TAG, "Pas connecté à internet");
-            return false;
-        }
-        // END_INCLUDE(connect)
-    }
 
 
     /**
